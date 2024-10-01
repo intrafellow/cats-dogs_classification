@@ -22,10 +22,10 @@ class PetImageClassifier:
             print(f"Загрузка сохраненной модели из {self.model_path}")
             self.model = tf.keras.models.load_model(self.model_path)
 
-            # После загрузки модели нужно перекомпилировать её
+            
             self.model.compile(
                 loss='binary_crossentropy',
-                optimizer='adam',  # Оптимизатор должен быть заново инициализирован
+                optimizer='adam',
                 metrics=['accuracy']
             )
         else:
@@ -47,7 +47,6 @@ class PetImageClassifier:
         return model
 
     def train(self, train_generator, validation_generator, epochs=30, steps_per_epoch=50, validation_steps=20):
-        # Компиляция модели уже выполнена при её загрузке или создании, поэтому здесь не нужно её проверять повторно
         history = self.model.fit(
             train_generator,
             steps_per_epoch=steps_per_epoch,
@@ -151,31 +150,25 @@ def train_classifier(data_dir):
     print("Results saved to classification_results.txt")
 
 
-# Функция для интерфейса tkinter
 def run_gui(classifier):
     def upload_image():
         file_path = filedialog.askopenfilename()
         if file_path:
-            # Отображение изображения в интерфейсе
             img = Image.open(file_path)
-            img_resized = img.resize((128, 128))  # Изменение размера изображения
+            img_resized = img.resize((128, 128))
             img_tk = ImageTk.PhotoImage(img_resized)
 
             image_label.config(image=img_tk)
             image_label.image = img_tk
 
-            # Преобразование изображения в формат для модели
             img_array = np.array(img_resized) / 255.0
             img_array = np.expand_dims(img_array, axis=0)
 
-            # Получение предсказания от модели
             prediction = classifier.predict(img_array)
             predicted_class = classifier.categories[1] if prediction[0] > 0.5 else classifier.categories[0]
 
-            # Приведение confidence к скаляру (извлечение значения)
             confidence = prediction[0][0] if prediction[0] > 0.5 else 1 - prediction[0][0]
 
-            # Вывод результатов
             result_label.config(text=f"Класс: {predicted_class}, Точность: {confidence:.2f}")
 
     root = Tk()
@@ -197,7 +190,6 @@ def run_gui(classifier):
 
 
 train_classifier('/Users/idg0d/PycharmProjects/tst/PetImages')
-# Запуск интерфейса
 classifier = PetImageClassifier(categories=['Cat', 'Dog'], model_path='saved_model_mobilenet.h5')
 run_gui(classifier)
 
